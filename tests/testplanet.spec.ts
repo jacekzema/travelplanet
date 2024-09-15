@@ -1,4 +1,4 @@
-import { test, expect, Locator } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { PageManager } from '../pages/pageManager';
 import { getFutureDateFromTomorrow } from '../helpers/dateHelper';
 
@@ -76,7 +76,7 @@ test.beforeEach(async ({ page }, testInfo) => {
     { url: 'https://www.invia.sk/', localization: 'sk-SK' , destination: 'Egypt' },
     { url: 'https://www.invia.hu/', localization: 'hu-HU' , destination: 'Egyiptom' }
 ].forEach(({ url, localization, destination }) => {
-    test(`Destination: and Date selection: ${url}`, async ({ page }, testInfo) => {
+    test(`Destination: ${destination} and Date selection: ${url}`, async ({ page }, testInfo) => {
         const pageManager = new PageManager(page, testInfo);
         const startDate: Date = getFutureDateFromTomorrow(7);
         const endDate: Date = getFutureDateFromTomorrow(14);
@@ -97,5 +97,52 @@ test.beforeEach(async ({ page }, testInfo) => {
         await pageManager.onMainPage().selectEndDate(endDate, localization);
         await pageManager.onMainPage().clickDataPickerSaveButton();
         await pageManager.onMainPage().clickSearchFormButton();
+        // Check if results page is loaded
+        await expect(pageManager.onSearchResultPage().productListSection).toBeVisible;
+    });
+});
+
+[
+    { url: 'https://www.travelplanet.pl/', localization: 'pl-PL', destination: 'Egipt' },
+    { url: 'https://www.invia.cz/', localization: 'cs-CZ' , destination: 'Egypt' },
+    { url: 'https://www.invia.sk/', localization: 'sk-SK' , destination: 'Egypt' },
+    { url: 'https://www.invia.hu/', localization: 'hu-HU' , destination: 'Egyiptom' }
+].forEach(({ url, localization, destination }) => {
+    test(`Offer selection and offer page for: ${url} and destination: ${destination}`, async ({ page }, testInfo) => {
+        const pageManager = new PageManager(page, testInfo);
+        const startDate: Date = getFutureDateFromTomorrow(20);
+        const endDate: Date = getFutureDateFromTomorrow(30);
+        const travelNumberFromTop: number = 1;
+
+        // Navigate to the homepage
+        await page.goto(url);
+        await expect(pageManager.onMainPage().travelSearchForm).toBeVisible();
+        // Input a destination in the search bar
+        await pageManager.onMainPage().fillDestination(destination);
+        await pageManager.onMainPage().selectDestinationFromList(destination);
+        await pageManager.onMainPage().clickDestinationSaveButton();
+        await expect(pageManager.onMainPage().destinationPicker).toHaveAttribute('value', destination);
+        // Select a travel date range using the date picker
+        await pageManager.onMainPage().clickDatePickerInput();
+        // startDate - x days from today
+        await pageManager.onMainPage().selectStartDate(startDate, localization);
+        // endDate - x days from today
+        await pageManager.onMainPage().selectEndDate(endDate, localization);
+        await pageManager.onMainPage().clickDataPickerSaveButton();
+        await pageManager.onMainPage().clickSearchFormButton();
+        // Check if results page is loaded
+        expect(pageManager.onSearchResultPage().productListSection).toBeVisible;
+        // Go to next result page
+        await pageManager.onSearchResultPage().clickNextPageButton();
+        // Select travel offer
+        await pageManager.onSearchResultPage().selectTravelOffer(travelNumberFromTop);
+        // Check offer page
+        let destinationFromResultPage = await pageManager.onResultPage().getNameOfDestination();
+        expect(destinationFromResultPage).toContain(destination);
+        await expect(pageManager.onResultPage().gallerySection).toBeVisible();
+        await expect(pageManager.onResultPage().rightOrderForm).toBeVisible();
+        await expect(pageManager.onResultPage().descriptionSection).toBeVisible();
+        await expect(pageManager.onResultPage().reviewSection).toBeVisible();
+        await expect(pageManager.onResultPage().weatherSection).toBeVisible();
     });
 });

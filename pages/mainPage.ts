@@ -57,7 +57,7 @@ export class MainPage extends BasePage {
         await test.step(`Select start date as: ${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`, async () => {
             await this.selectMonthAndYearByDate(date, localization);
             let day: string = date.getDate().toString();
-            await this.datePickerPopupLeftCalendar.locator('button[aria-disabled="false"] span[aria-hidden="true"]').getByText(day).click();
+            await this.datePickerPopupLeftCalendar.locator('button[aria-disabled="false"] span[aria-hidden="true"]').getByText(day,{ exact: true }).click();
         })
     }
 
@@ -65,7 +65,7 @@ export class MainPage extends BasePage {
         await test.step(`Select end date as: ${date.getDate()}-${date.getMonth()}-${date.getFullYear()}}`, async () => {
             await this.selectMonthAndYearByDate(date, localization);
             let day: string = date.getDate().toString();
-            await this.datePickerPopupLeftCalendar.locator('button[aria-disabled="false"] span[aria-hidden="true"]').getByText(day).click();
+            await this.datePickerPopupLeftCalendar.locator('button[aria-disabled="false"] span[aria-hidden="true"]').getByText(day,{ exact: true }).click();
         })
     }
 
@@ -99,16 +99,4 @@ export class MainPage extends BasePage {
             await this.searchFormButton.click();
         })
     }
-
-    async selectTravelDate() {
-        await test.step('Select date from: to:', async () => {
-
-        })
-    }
-
-    private async select() {
-
-    }
-
-
 }
